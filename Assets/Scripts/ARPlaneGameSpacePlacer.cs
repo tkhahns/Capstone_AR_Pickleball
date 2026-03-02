@@ -18,6 +18,10 @@ public class ARPlaneGameSpacePlacer : MonoBehaviour
 
     [Header("Placement")]
     [SerializeField] private bool autoPlaceOnFirstDetectedPlane = true;
+    [Tooltip("When true, placement is deferred until AllowPlacement() is called " +
+             "(e.g. by the PlaceTrackedImages.onFirstImageDetected event). " +
+             "Planes are still detected in the background so a surface is ready.")]
+    [SerializeField] private bool waitForExternalTrigger = false;
     [SerializeField] private bool requireTapToPlace = false;
     [SerializeField] private bool allowRepositionAfterPlacement = false;
     [SerializeField] private Vector3 placementOffsetMeters = Vector3.zero;
@@ -31,6 +35,8 @@ public class ARPlaneGameSpacePlacer : MonoBehaviour
     private static readonly List<ARRaycastHit> RaycastHits = new List<ARRaycastHit>();
 
     private bool isPlaced;
+    private bool isAllowed;        // external trigger received
+    private Pose? pendingPlanePose; // best plane pose stored while waiting
 
     private void Awake()
     {
@@ -112,7 +118,41 @@ public class ARPlaneGameSpacePlacer : MonoBehaviour
 
         ARPlane plane = args.added[0];
         Pose planePose = new Pose(plane.transform.position, plane.transform.rotation);
+
+        // If we must wait for an external trigger (e.g. image detection), store the pose
+        if (waitForExternalTrigger && !isAllowed)
+        {
+            pendingPlanePose = planePose;
+            return;
+        }
+
         PlaceGameSpace(planePose.position, planePose.rotation);
+    }
+
+    /// <summary>
+    /// Call this from PlaceTrackedImages.onFirstImageDetected (or any other trigger)
+    /// to allow the game space to be placed. If a plane was already detected,
+    /// placement happens immediately; otherwise it happens on the next plane detection.
+    /// </summary>
+    public void AllowPlacement()
+    {
+        isAllowed = true;
+
+        // If a plane was already found while we were waiting, place now
+        if (pendingPlanePose.HasValue && !isPlaced)
+        {
+            PlaceGameSpace(pendingPlanePose.Value.position, pendingPlanePose.Value.rotation);
+        }
+        // If no plane yet but we want instant feedback, fall back to camera-forward on the floor
+        else if (!isPlaced && arCamera != null)
+        {
+            Vector3 cameraForward = arCamera.transform.forward;
+            cameraForward.y = 0f;
+            if (cameraForward.sqrMagnitude < 0.001f) cameraForward = Vector3.forward;
+            Vector3 fallbackPos = arCamera.transform.position + cameraForward.normalized * 2f;
+            fallbackPos.y = arCamera.transform.position.y - 1.3f; // approximate floor
+            PlaceGameSpace(fallbackPos, Quaternion.identity);
+        }
     }
 
     private void PlaceGameSpace(Vector3 planePosition, Quaternion planeRotation)

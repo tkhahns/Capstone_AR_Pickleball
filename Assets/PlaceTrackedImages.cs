@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.XR.ARFoundation;
 using UnityEngine.XR.ARSubsystems;
 
@@ -14,8 +15,15 @@ public class PlaceTrackedImages : MonoBehaviour
     // as their corresponding 2D images in the reference image library 
     public GameObject[] ArPrefabs;
 
+    [Header("Game Flow")]
+    [Tooltip("Fired once when the very first tracked image is detected. " +
+             "Wire this to ARPlaneGameSpacePlacer.AllowPlacement() to spawn the court.")]
+    public UnityEvent onFirstImageDetected;
+
     //Keep dictionary array of created prefabs
     private readonly Dictionary<string, GameObject> _instantiatedPrefabs = new Dictionary<string, GameObject>();
+
+    private bool _firstImageFired;
 
     void Awake()
     {
@@ -56,6 +64,13 @@ public class PlaceTrackedImages : MonoBehaviour
                     var newPrefab = Instantiate(curPrefab, trackedImage.transform);
                     // Add the created prefab to our array
                     _instantiatedPrefabs[imageName] = newPrefab;
+
+                    // Fire the one-shot event so the game space can activate
+                    if (!_firstImageFired)
+                    {
+                        _firstImageFired = true;
+                        onFirstImageDetected?.Invoke();
+                    }
                 }
             }
         }
