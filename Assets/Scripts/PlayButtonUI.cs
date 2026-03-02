@@ -53,7 +53,7 @@ public class PlayButtonUI : MonoBehaviour
         GameObject instructGO = new GameObject("InstructionText");
         instructGO.transform.SetParent(canvasGO.transform, false);
         Text instructText = instructGO.AddComponent<Text>();
-        instructText.text = "Point your phone at the floor.\nWhen you see a plane, tap Play!";
+        instructText.text = "Scan the Court QR code to place the court.\nTap Play to dismiss this overlay.";
         instructText.fontSize = 28;
         instructText.color = Color.white;
         instructText.alignment = TextAnchor.MiddleCenter;
@@ -98,23 +98,9 @@ public class PlayButtonUI : MonoBehaviour
 
     private void OnPlayPressed()
     {
-        if (gamePlacer != null)
-        {
-            gamePlacer.AllowPlacement();
-        }
-        else
-        {
-            // Fallback: try to find it in the scene
-            var placer = FindFirstObjectByType<ARPlaneGameSpacePlacer>();
-            if (placer != null)
-            {
-                placer.AllowPlacement();
-            }
-            else
-            {
-                Debug.LogError("[PlayButtonUI] No ARPlaneGameSpacePlacer found!");
-            }
-        }
+        // Court placement is handled by QR anchor detection (PlaceTrackedImages → PlaceAtAnchor).
+        // This button only dismisses the start-screen overlay.
+        Debug.Log("[PlayButtonUI] Start overlay dismissed. Scan the Court QR to place the court.");
 
         // Destroy the overlay
         Destroy(canvasGO);

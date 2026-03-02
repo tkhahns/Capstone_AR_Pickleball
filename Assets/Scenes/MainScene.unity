@@ -2170,7 +2170,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_SerializedLibrary: {fileID: 11400000, guid: ad2f87b2060f91f4c85056a97b79225e, type: 2}
-  m_MaxNumberOfMovingImages: 0
+  m_MaxNumberOfMovingImages: 1
   m_TrackedImagePrefab: {fileID: 0}
 --- !u!114 &1289545463
 MonoBehaviour:
@@ -2186,7 +2186,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ArPrefabs:
   - {fileID: 2978820566599889947, guid: 47ad83c9882088242a9c0cbaa522fde0, type: 3}
-  courtAnchorImageName: CourtAnchor
+  courtAnchorImageName: court_anchor
   gamePlacer: {fileID: 2512387470231460731}
   onCourtAnchorDetected:
     m_PersistentCalls:
