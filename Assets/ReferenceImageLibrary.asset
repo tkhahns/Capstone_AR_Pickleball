@@ -25,5 +25,15 @@ MonoBehaviour:
       m_GuidHigh: 12950513126873678489
     m_Size: {x: 0.1, y: 0.1}
     m_SpecifySize: 1
-    m_Name: Racket_Pickelball4
+    m_Name: racket_marker
     m_Texture: {fileID: 2800000, guid: b7abbb5c6fb36ab499c256fa1277b9b3, type: 3}
+  - m_SerializedGuid:
+      m_GuidLow: 4920789056657194015
+      m_GuidHigh: 13276905470420786834
+    m_SerializedTextureGuid:
+      m_GuidLow: 4872797346522564345
+      m_GuidHigh: 3839587805047175421
+    m_Size: {x: 0.2, y: 0.2}
+    m_SpecifySize: 1
+    m_Name: court_anchor
+    m_Texture: {fileID: 2800000, guid: 95f186f9a75e439ffd38c203c4f44835, type: 3}

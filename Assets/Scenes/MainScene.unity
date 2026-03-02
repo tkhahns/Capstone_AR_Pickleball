@@ -885,7 +885,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: -0.022768974, y: -5.086465, z: 13.84}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0.972, y: 0.972, z: 0.972}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1131755543}
@@ -2186,7 +2186,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ArPrefabs:
   - {fileID: 2978820566599889947, guid: 47ad83c9882088242a9c0cbaa522fde0, type: 3}
-  onFirstImageDetected:
+  courtAnchorImageName: CourtAnchor
+  gamePlacer: {fileID: 2512387470231460731}
+  onCourtAnchorDetected:
     m_PersistentCalls:
       m_Calls: []
 --- !u!114 &1289545464
@@ -2204,8 +2206,8 @@ MonoBehaviour:
   m_Camera: {fileID: 2512387469332387782}
   m_OriginBaseGameObject: {fileID: 2512387470231460730}
   m_CameraFloorOffsetObject: {fileID: 2512387470665874425}
-  m_RequestedTrackingOriginMode: 0
-  m_CameraYOffset: 1.1176
+  m_RequestedTrackingOriginMode: 2
+  m_CameraYOffset: 0
 --- !u!114 &1315407485
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2798,7 +2800,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: -0.022768974, y: -5.086465, z: 13.84}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0.972, y: 0.972, z: 0.972}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1131755543}
@@ -3275,8 +3277,8 @@ Transform:
   m_GameObject: {fileID: 1878192913}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: 0.7071068, z: -0, w: 0.7071068}
-  m_LocalPosition: {x: -2.022769, y: -4.686465, z: 18.84}
-  m_LocalScale: {x: 0.40000004, y: 0.4, z: 0.40000004}
+  m_LocalPosition: {x: -2.022769, y: -4.236465, z: 18.84}
+  m_LocalScale: {x: 0.85, y: 0.85, z: 0.85}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 2131689671}
@@ -4049,8 +4051,8 @@ MonoBehaviour:
   planeManager: {fileID: 0}
   raycastManager: {fileID: 0}
   arCamera: {fileID: 2512387469332387782}
-  autoPlaceOnFirstDetectedPlane: 1
-  waitForExternalTrigger: 1
+  autoPlaceOnFirstDetectedPlane: 0
+  waitForExternalTrigger: 0
   requireTapToPlace: 0
   allowRepositionAfterPlacement: 0
   placementOffsetMeters: {x: 0, y: 5.086465, z: -10}

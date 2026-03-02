@@ -15,15 +15,22 @@ public class PlaceTrackedImages : MonoBehaviour
     // as their corresponding 2D images in the reference image library 
     public GameObject[] ArPrefabs;
 
-    [Header("Game Flow")]
-    [Tooltip("Fired once when the very first tracked image is detected. " +
-             "Wire this to ARPlaneGameSpacePlacer.AllowPlacement() to spawn the court.")]
-    public UnityEvent onFirstImageDetected;
+    [Header("Court Anchor")]
+    [Tooltip("Name of the reference image used as the stationary court anchor " +
+             "(must match the entry in the Reference Image Library).")]
+    [SerializeField] private string courtAnchorImageName = "CourtAnchor";
 
-    //Keep dictionary array of created prefabs
+    [Tooltip("The ARPlaneGameSpacePlacer that will receive the anchor pose.")]
+    [SerializeField] private ARPlaneGameSpacePlacer gamePlacer;
+
+    [Header("Game Flow")]
+    [Tooltip("Fired once when the court anchor QR is first detected.")]
+    public UnityEvent onCourtAnchorDetected;
+
+    // Keep dictionary array of created prefabs
     private readonly Dictionary<string, GameObject> _instantiatedPrefabs = new Dictionary<string, GameObject>();
 
-    private bool _firstImageFired;
+    private bool _courtAnchorPlaced;
 
     void Awake()
     {
@@ -46,52 +53,82 @@ public class PlaceTrackedImages : MonoBehaviour
     // Event Handler
     private void OnTrackedImagesChanged(ARTrackedImagesChangedEventArgs eventArgs)
     {
-
-        // Loop through all new tracked images that have been detected
-        foreach (var trackedImage in eventArgs.updated)
-        {
-            // Get the ame of the referance image
-            var imageName = trackedImage.referenceImage.name;
-            // Now loop over the array of prefabs
-            foreach (var curPrefab in ArPrefabs)
-            {
-                // Check wether this prefab matches the tracked image name, and that
-                // the prefab hasn't already been created
-                if (string.Compare(curPrefab.name, imageName, StringComparison.OrdinalIgnoreCase) == 0
-                    && !_instantiatedPrefabs.ContainsKey(imageName))
-                {
-                    // Instantiate the prefab, parenting it to the ARTrackedImage
-                    var newPrefab = Instantiate(curPrefab, trackedImage.transform);
-                    // Add the created prefab to our array
-                    _instantiatedPrefabs[imageName] = newPrefab;
-
-                    // Fire the one-shot event so the game space can activate
-                    if (!_firstImageFired)
-                    {
-                        _firstImageFired = true;
-                        onFirstImageDetected?.Invoke();
-                    }
-                }
-            }
-        }
-
-        // For all prefabs that have been created so far, set them active or no depending
-        // on whether their corresponding image is currectly being tracked
-        foreach (var trackedImage in eventArgs.updated)
-        {
-            _instantiatedPrefabs[trackedImage.referenceImage.name]
-                .SetActive(trackedImage.trackingState == TrackingState.Tracking);
-        }
+        // Process both newly added AND updated images
+        ProcessTrackedImages(eventArgs.added);
+        ProcessTrackedImages(eventArgs.updated);
 
         // If the AR subsystem has given up looking for a tracked image
         foreach (var trackedImage in eventArgs.removed)
         {
-            // Destroy its prefab
-            Destroy(_instantiatedPrefabs[trackedImage.referenceImage.name]);
-            // Also remove the instance from our array
-            _instantiatedPrefabs.Remove(trackedImage.referenceImage.name);
-            // Or, simply set the prefab instance to inactive
-            //_instantiatedPrefabs[trackedImage.referenceImage.name].SetActive(false);
+            var imageName = trackedImage.referenceImage.name;
+
+            // Never destroy things spawned by the court anchor
+            if (string.Compare(imageName, courtAnchorImageName, StringComparison.OrdinalIgnoreCase) == 0)
+                continue;
+
+            if (_instantiatedPrefabs.TryGetValue(imageName, out var go))
+            {
+                Destroy(go);
+                _instantiatedPrefabs.Remove(imageName);
+            }
+        }
+    }
+
+    private void ProcessTrackedImages(IReadOnlyList<ARTrackedImage> images)
+    {
+        if (images == null) return;
+
+        foreach (var trackedImage in images)
+        {
+            var imageName = trackedImage.referenceImage.name;
+
+            // ── Court Anchor handling ──────────────────────────────
+            if (string.Compare(imageName, courtAnchorImageName, StringComparison.OrdinalIgnoreCase) == 0)
+            {
+                if (trackedImage.trackingState != TrackingState.Tracking)
+                    continue;
+
+                if (!_courtAnchorPlaced)
+                {
+                    _courtAnchorPlaced = true;
+
+                    // Resolve gamePlacer if not assigned in Inspector
+                    if (gamePlacer == null)
+                        gamePlacer = FindFirstObjectByType<ARPlaneGameSpacePlacer>();
+
+                    if (gamePlacer != null)
+                    {
+                        var anchorPose = new Pose(
+                            trackedImage.transform.position,
+                            trackedImage.transform.rotation);
+                        gamePlacer.PlaceAtAnchor(anchorPose);
+                    }
+                    else
+                    {
+                        Debug.LogError("[PlaceTrackedImages] No ARPlaneGameSpacePlacer found!");
+                    }
+
+                    onCourtAnchorDetected?.Invoke();
+                }
+                continue; // don't try to match a prefab for the anchor image
+            }
+
+            // ── Normal prefab-spawning for other images (e.g. racket) ──
+            foreach (var curPrefab in ArPrefabs)
+            {
+                if (string.Compare(curPrefab.name, imageName, StringComparison.OrdinalIgnoreCase) == 0
+                    && !_instantiatedPrefabs.ContainsKey(imageName))
+                {
+                    var newPrefab = Instantiate(curPrefab, trackedImage.transform);
+                    _instantiatedPrefabs[imageName] = newPrefab;
+                }
+            }
+
+            // Update visibility of already-instantiated prefabs
+            if (_instantiatedPrefabs.TryGetValue(imageName, out var existingGo))
+            {
+                existingGo.SetActive(trackedImage.trackingState == TrackingState.Tracking);
+            }
         }
     }
 }

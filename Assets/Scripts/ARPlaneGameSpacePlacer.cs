@@ -135,6 +135,32 @@ public class ARPlaneGameSpacePlacer : MonoBehaviour
     }
 
     /// <summary>
+    /// Called by PlaceTrackedImages when the court anchor QR code is detected.
+    /// Places the game space so that the anchor QR sits at the given world pose,
+    /// applying placementOffsetMeters to shift the court into the correct position
+    /// relative to the anchor.
+    /// </summary>
+    public void PlaceAtAnchor(Pose anchorPose)
+    {
+        if (isPlaced) return;
+
+        // Use the anchor's yaw (flat on the floor), ignore pitch/roll
+        Vector3 anchorForward = anchorPose.rotation * Vector3.forward;
+        anchorForward.y = 0f;
+        if (anchorForward.sqrMagnitude < 0.0001f)
+            anchorForward = Vector3.forward;
+
+        Quaternion targetRotation = Quaternion.LookRotation(anchorForward.normalized, Vector3.up);
+        targetRotation *= Quaternion.Euler(rotationOffsetEuler);
+
+        // Anchor position is at floor level; offset shifts GameSpaceRoot
+        // so the court mesh (which has large negative-Y local positions) lands correctly.
+        Vector3 targetPosition = anchorPose.position + targetRotation * placementOffsetMeters;
+
+        FinalizePlace(targetPosition, targetRotation);
+    }
+
+    /// <summary>
     /// Call this from PlaceTrackedImages.onFirstImageDetected (or any other trigger)
     /// to allow the game space to be placed. If a plane was already detected,
     /// placement happens immediately; otherwise it happens on the next plane detection.
@@ -158,6 +184,10 @@ public class ARPlaneGameSpacePlacer : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Plane-based placement: computes final rotation (camera-aligned or plane-based)
+    /// and applies offsets, then calls FinalizePlace.
+    /// </summary>
     private void PlaceGameSpace(Vector3 planePosition, Quaternion planeRotation)
     {
         if (gameSpaceRoot == null)
@@ -185,7 +215,18 @@ public class ARPlaneGameSpacePlacer : MonoBehaviour
         targetRotation *= Quaternion.Euler(rotationOffsetEuler);
 
         Vector3 targetPosition = planePosition + targetRotation * placementOffsetMeters;
-        gameSpaceRoot.SetPositionAndRotation(targetPosition, targetRotation);
+        FinalizePlace(targetPosition, targetRotation);
+    }
+
+    /// <summary>
+    /// Shared final step: actually moves GameSpaceRoot, activates it, and disables
+    /// plane detection / visuals if configured.
+    /// </summary>
+    private void FinalizePlace(Vector3 finalPosition, Quaternion finalRotation)
+    {
+        if (gameSpaceRoot == null) return;
+
+        gameSpaceRoot.SetPositionAndRotation(finalPosition, finalRotation);
 
         if (!gameSpaceRoot.gameObject.activeSelf)
         {
