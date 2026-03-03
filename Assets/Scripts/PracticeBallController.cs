@@ -50,4 +50,16 @@ public class PracticeBallController : MonoBehaviour
         transform.position = initialPosition;
         transform.rotation = initialRotation;
     }
+
+    /// <summary>
+    /// Resets the ball when it hits an out-of-bounds wall.
+    /// Tag your wall objects as "Wall" for this to work.
+    /// </summary>
+    private void OnCollisionEnter(Collision collision)
+    {
+        if (collision.transform.CompareTag("Wall"))
+        {
+            ResetBall();
+        }
+    }
 }

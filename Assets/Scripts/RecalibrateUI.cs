@@ -2,8 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// Creates two small recalibration buttons in the top-right corner:
-///   • "↻ Court"  — resets the court anchor so the next QR scan re-places it
+/// Creates a small recalibration button in the top-right corner:
 ///   • "↻ Racket" — destroys the current racket prefab so it re-spawns on next detection
 ///
 /// Setup: Attach to any GameObject. Drag the PlaceTrackedImages reference
@@ -43,20 +42,12 @@ public class RecalibrateUI : MonoBehaviour
         scaler.referenceResolution = new Vector2(1920, 1080); // landscape
         _canvasGO.AddComponent<GraphicRaycaster>();
 
-        // ── Court Recalibrate Button (top-right) ──
-        CreateButton(
-            parent: _canvasGO.transform,
-            label: "\u21BB Court",
-            anchorMin: new Vector2(0.82f, 0.88f),
-            anchorMax: new Vector2(0.99f, 0.98f),
-            onClick: OnCourtRecalibrate);
-
-        // ── Racket Recalibrate Button (below court button) ──
+        // ── Racket Recalibrate Button (top-right) ──
         CreateButton(
             parent: _canvasGO.transform,
             label: "\u21BB Racket",
-            anchorMin: new Vector2(0.82f, 0.76f),
-            anchorMax: new Vector2(0.99f, 0.86f),
+            anchorMin: new Vector2(0.82f, 0.88f),
+            anchorMax: new Vector2(0.99f, 0.98f),
             onClick: OnRacketRecalibrate);
     }
 
@@ -97,13 +88,6 @@ public class RecalibrateUI : MonoBehaviour
     }
 
     // ── Button callbacks ──
-
-    private void OnCourtRecalibrate()
-    {
-        Debug.Log("[RecalibrateUI] Court recalibrate pressed.");
-        if (imageTracker != null)
-            imageTracker.ResetCourtAnchor();
-    }
 
     private void OnRacketRecalibrate()
     {
