@@ -108,6 +108,17 @@ public class PlayButtonUI : MonoBehaviour
     {
         Debug.Log("[PlayButtonUI] Start overlay dismissed.");
 
+        // Unlock court / racket spawning via image tracking
+        var tracker = FindFirstObjectByType<PlaceTrackedImages>();
+        if (tracker != null)
+        {
+            tracker.StartGame();
+        }
+        else
+        {
+            Debug.LogWarning("[PlayButtonUI] PlaceTrackedImages not found — could not unlock image tracking.");
+        }
+
         // Destroy the entire overlay canvas + this component
         if (canvasGO != null)
             Destroy(canvasGO);

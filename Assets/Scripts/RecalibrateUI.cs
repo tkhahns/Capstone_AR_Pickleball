@@ -135,15 +135,37 @@ public class RecalibrateUI : MonoBehaviour
     {
         Debug.Log("[GameHUD] Reset Ball pressed.");
 
-        // Try the cached reference first, then search again (ball may have
-        // been spawned after this script's Start).
+        // Always re-find — the cached reference can become stale
+        // (Unity null) if the ball object was recycled.
         if (_ballController == null)
             _ballController = FindFirstObjectByType<PracticeBallController>();
 
+        // Still null? Try searching by type on all objects including inactive.
+        if (_ballController == null)
+        {
+            foreach (var bc in Resources.FindObjectsOfTypeAll<PracticeBallController>())
+            {
+                // Skip assets / prefabs — only accept scene instances.
+                if (bc.gameObject.scene.isLoaded)
+                {
+                    _ballController = bc;
+                    break;
+                }
+            }
+        }
+
         if (_ballController != null)
+        {
+            // Re-enable the GameObject in case it was deactivated.
+            if (!_ballController.gameObject.activeInHierarchy)
+                _ballController.gameObject.SetActive(true);
+
             _ballController.ResetBall();
+        }
         else
+        {
             Debug.LogWarning("[GameHUD] No PracticeBallController found in scene.");
+        }
     }
 
     private void OnCourtRecalibrate()

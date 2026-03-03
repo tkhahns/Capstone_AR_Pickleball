@@ -25,6 +25,12 @@ public class PlaceTrackedImages : MonoBehaviour
 
     private bool _courtPlaced;
 
+    /// <summary>
+    /// Gate flag — when false, image detections are ignored.
+    /// Set to true by <see cref="StartGame"/> (called from PlayButtonUI).
+    /// </summary>
+    private bool _gameStarted;
+
     // Keep dictionary array of created prefabs
     private readonly Dictionary<string, GameObject> _instantiatedPrefabs = new Dictionary<string, GameObject>();
 
@@ -95,9 +101,20 @@ public class PlaceTrackedImages : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Called by PlayButtonUI when the player taps Start.
+    /// Unlocks court / racket spawning from image tracking.
+    /// </summary>
+    public void StartGame()
+    {
+        _gameStarted = true;
+        Debug.Log("[PlaceTrackedImages] Game started — image tracking unlocked.");
+    }
+
     private void ProcessTrackedImages(IReadOnlyList<ARTrackedImage> images)
     {
         if (images == null) return;
+        if (!_gameStarted) return; // wait until player presses Start
 
         foreach (var trackedImage in images)
         {

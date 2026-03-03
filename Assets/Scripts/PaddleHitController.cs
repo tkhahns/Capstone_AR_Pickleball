@@ -501,19 +501,15 @@ public class PaddleHitController : MonoBehaviour
             newVelocity = newVelocity.normalized * maxBallSpeed;
         }
 
+        // ── Unfreeze the ball if it is in dead-hang ────────────────────────────
+        var deadHang = ballBody.GetComponent<DeadHangBall>();
+        if (deadHang != null && deadHang.IsFrozen)
+        {
+            deadHang.Release();
+        }
+
         // ForceMode.VelocityChange applies Δv directly, independent of ball mass.
         ballBody.AddForce(newVelocity - ballBody.velocity, ForceMode.VelocityChange);
-        // ── Enable gravity on the ball after the first hit ─────────────────────────
-        if (!ballBody.useGravity)
-        {
-            ballBody.useGravity = true;
-        }
-        // Also notify PracticeBallController so it knows gravity is active.
-        var ballCtrl = ballBody.GetComponent<PracticeBallController>();
-        if (ballCtrl != null)
-        {
-            ballCtrl.EnableGravity();
-        }
         // ── Angular impulse (spin) ────────────────────────────────────────────────
         // 1. Off-centre contact: tangential impulse × lever arm from ball COM.
         //    Δω ≈ spinFromOffCenter · (r_contact × Δv_t)   [hollow sphere factor]

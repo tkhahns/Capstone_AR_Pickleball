@@ -8,7 +8,7 @@ public class PracticeBallController : MonoBehaviour
     [Header("Serve Position (local to GameSpaceRoot)")]
     [Tooltip("Where the ball spawns relative to GameSpaceRoot. " +
              "Ignored when servePoint is set to an external Transform.")]
-    public Vector3 courtServeLocalPos = new Vector3(0.44f, 0.25f, 2.0f);
+    public Vector3 courtServeLocalPos = new Vector3(0.44f, 0.50f, 2.0f);
 
     [Header("Ground Safety")]
     [Tooltip("Automatically creates an invisible floor collider at Y=0 " +
@@ -21,10 +21,15 @@ public class PracticeBallController : MonoBehaviour
     private Rigidbody ballRigidbody;
     private Vector3 initialLocalPosition;
     private Transform gameSpaceRoot;
+    private DeadHangBall deadHang;
+
+    /// <summary>True while the ball is frozen in mid-air waiting for a paddle hit.</summary>
+    public bool IsFrozen => deadHang != null && deadHang.IsFrozen;
 
     private void Awake()
     {
         ballRigidbody = GetComponent<Rigidbody>();
+        deadHang = GetComponent<DeadHangBall>();
 
         // Walk up the hierarchy to find the GameSpaceRoot parent.
         // Ball2 is a direct child of GameSpaceRoot.
@@ -33,13 +38,7 @@ public class PracticeBallController : MonoBehaviour
         // Remember the ball's original local position (set in the prefab / scene).
         initialLocalPosition = transform.localPosition;
 
-        // ── Gravity OFF until the ball is actually hit ───────────────────────
-        // Prevents the ball from falling through the court before gameplay starts.
-        if (ballRigidbody != null)
-        {
-            ballRigidbody.useGravity = false;
-            ballRigidbody.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
-        }
+        // DeadHangBall.Awake() already freezes the ball.
     }
 
     private void Start()
@@ -63,29 +62,24 @@ public class PracticeBallController : MonoBehaviour
     }
 
     /// <summary>
-    /// Resets the ball: stops motion, disables gravity, and places it at the
-    /// serve position so the player can see it and swing again.
+    /// Resets the ball: freezes it in mid-air at the serve position.
+    /// It will stay there until the paddle hits it.
+    /// Safe to call from physics callbacks (OnCollisionEnter, etc.).
     /// </summary>
     public void ResetBall()
     {
-        if (ballRigidbody != null)
-        {
-            ballRigidbody.velocity = Vector3.zero;
-            ballRigidbody.angularVelocity = Vector3.zero;
-            ballRigidbody.useGravity = false;
-        }
-
+        if (deadHang != null) deadHang.Freeze();
         PlaceAtServePosition();
     }
 
     /// <summary>
-    /// Called by PaddleHitController (or BotHitController) after the first
-    /// impulse is applied.  Turns on gravity so the ball follows a real arc.
+    /// Called by PaddleHitController (or BotHitController) when the paddle
+    /// hits the ball.  Unfreezes the ball and enables gravity so it follows
+    /// a real arc.
     /// </summary>
     public void EnableGravity()
     {
-        if (ballRigidbody != null)
-            ballRigidbody.useGravity = true;
+        if (deadHang != null) deadHang.Release();
     }
 
     // ─────────────────────────────────────────────────────────────────────────
