@@ -6,11 +6,11 @@ using UnityEngine.UI;
 /// on-screen buttons.  Layout (portrait phone):
 ///
 ///   ┌────────────────────────────────────┐
-///   │                    [↻ Court] [↻ Racket] │  ← top-right
+///   │                         [↻ Racket]       │  ← top-right row 1
+///   │                         [↻ Court ]       │  ← top-right row 2
 ///   │                                          │
 ///   │                                          │
-///   │                                          │
-///   │  [Reset Ball]                            │  ← bottom-left (large)
+///   │                          [Reset Ball]    │  ← bottom-right (large)
 ///   └────────────────────────────────────┘
 ///
 /// Setup: Attach to any GameObject (e.g. GameFlowManager).
@@ -55,35 +55,35 @@ public class RecalibrateUI : MonoBehaviour
         scaler.matchWidthOrHeight = 0.5f;
         _canvasGO.AddComponent<GraphicRaycaster>();
 
-        // ── RESET BALL — bottom-left, large and prominent ───────────────────
+        // ── RESET BALL — bottom-right, large and prominent ────────────────
         CreateButton(
             parent: _canvasGO.transform,
             label: "Reset Ball",
-            anchorMin: new Vector2(0.02f, 0.02f),
-            anchorMax: new Vector2(0.38f, 0.09f),
+            anchorMin: new Vector2(0.62f, 0.02f),
+            anchorMax: new Vector2(0.98f, 0.09f),
             color: accentColor,
             textSize: 32,
             onClick: OnResetBall);
 
-        // ── Recalibrate Court — top-right, upper ────────────────────────────
-        CreateButton(
-            parent: _canvasGO.transform,
-            label: "\u21BB Court",
-            anchorMin: new Vector2(0.52f, 0.92f),
-            anchorMax: new Vector2(0.74f, 0.98f),
-            color: buttonColor,
-            textSize: fontSize,
-            onClick: OnCourtRecalibrate);
-
-        // ── Recalibrate Racket — top-right, next to court ───────────────────
+        // ── Recalibrate Racket — top-right, row 1 ──────────────────────────
         CreateButton(
             parent: _canvasGO.transform,
             label: "\u21BB Racket",
-            anchorMin: new Vector2(0.76f, 0.92f),
+            anchorMin: new Vector2(0.72f, 0.92f),
             anchorMax: new Vector2(0.98f, 0.98f),
             color: buttonColor,
             textSize: fontSize,
             onClick: OnRacketRecalibrate);
+
+        // ── Recalibrate Court — top-right, row 2 (below racket) ────────────
+        CreateButton(
+            parent: _canvasGO.transform,
+            label: "\u21BB Court",
+            anchorMin: new Vector2(0.72f, 0.85f),
+            anchorMax: new Vector2(0.98f, 0.91f),
+            color: buttonColor,
+            textSize: fontSize,
+            onClick: OnCourtRecalibrate);
     }
 
     // ── Button factory ──────────────────────────────────────────────────────

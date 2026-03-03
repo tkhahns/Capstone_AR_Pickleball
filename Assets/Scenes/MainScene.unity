@@ -4491,6 +4491,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   servePoint: {fileID: 2512387469332387801}
+  courtServeLocalPos: {x: 0.44, y: 0.25, z: 2}
+  createGroundPlane: 1
   resetKey: 114
 --- !u!1 &7191935676754332941
 GameObject:
